@@ -38,15 +38,15 @@ new(Size) ->
 
 update(#slide_sorted{size = Size, reservoir = Reservoir, n = N} = Sample, Value)
   when N < Size ->
-    ets:insert(Reservoir, {os:timestamp(), Value}),
+    ets:insert(Reservoir, {{os:timestamp(), make_ref()}, Value}),
     Sample#slide_sorted{n = N + 1};
 update(#slide_sorted{reservoir = Reservoir, n = N, size = Size} = Sample, Value)
   when N == Size ->
     Oldest = ets:first(Reservoir),
     ets:delete(Reservoir, Oldest),
-    ets:insert(Reservoir, {os:timestamp(), Value}),
+    ets:insert(Reservoir, {{os:timestamp(), make_ref()}, Value}),
     Sample.
 
 get_values(#slide_sorted{reservoir = Reservoir}) ->
     {_, Values} = lists:unzip(ets:tab2list(Reservoir)),
-    Values.
+    lists:sort(Values).
